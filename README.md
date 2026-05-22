@@ -1,14 +1,18 @@
-# CyberGuard AI
+# 🛡️ CyberGuard AI
 
-CyberGuard AI is a Gemini-powered cybersecurity assistant built with Python and Streamlit.
+**CyberGuard AI** is a Gemini-powered cybersecurity assistant built with **Python** and **Streamlit**.  
 It demonstrates how Google Gemini can be used for cybersecurity tasks such as summarizing security logs, analyzing phishing emails, reviewing insecure code, and suggesting secure fixes.
 
-## Final Topic
+---
+
+## 📌 Final Topic
 
 - **Topic:** Topic L - Gemini AI Capabilities
 - **Project Name:** CyberGuard AI: Gemini Cybersecurity Assistant
 
-## Key Features
+---
+
+## 🚀 Key Features
 
 CyberGuard AI demonstrates two major Gemini capabilities:
 
@@ -29,6 +33,8 @@ The assistant provides:
 - Risk level
 - Recommended actions
 
+---
+
 ### 2. Code Generation and Debugging
 
 CyberGuard AI can analyze insecure code snippets and identify common security problems.
@@ -43,15 +49,19 @@ It can detect issues such as:
 
 The assistant also suggests safer coding practices and secure fixes.
 
-## Demo Features
+---
+
+## 🧪 Demo Features
 
 The application contains two main tabs.
 
-### Tab 1: Security Log / Email Summarizer
+---
+
+## 🔍 Tab 1: Security Log / Email Summarizer
 
 This tab accepts security logs, phishing emails, or incident text and generates a cybersecurity-focused summary.
 
-Example input:
+### Example Input
 
 ```text
 Multiple failed SSH login attempts detected from unknown IP.
@@ -59,10 +69,11 @@ User root login failed 15 times.
 Port scanning activity found.
 ```
 
-Example output:
+### Example Output
 
 ```text
 Summary: Possible brute-force attack.
+
 Risk Level: High
 
 Recommended Actions:
@@ -72,26 +83,35 @@ Recommended Actions:
 - Check server logs
 ```
 
-### Tab 2: Secure Code Debugger
+---
+
+## 💻 Tab 2: Secure Code Debugger
 
 This tab accepts insecure code snippets and detects possible vulnerabilities.
 
-Example input:
+### Example Input
 
 ```python
 query = "SELECT * FROM users WHERE username = '" + username + "'"
 ```
 
-Example output:
+### Example Output
 
 ```text
 Vulnerability: SQL Injection
+
 Severity: Critical
-Problem: User input is directly added to the SQL query.
-Secure Fix: Use parameterized queries to prevent SQL injection.
+
+Problem:
+User input is directly added to the SQL query.
+
+Secure Fix:
+Use parameterized queries to prevent SQL injection.
 ```
 
-## Google Cloud Architecture
+---
+
+## 🏗️ Google Cloud Architecture
 
 ```text
 Streamlit UI
@@ -106,7 +126,9 @@ Firestore / Cloud Storage
 Google Cloud Run Deployment
 ```
 
-## Google Cloud Components
+---
+
+## ☁️ Google Cloud Components
 
 | Component | Purpose |
 |---|---|
@@ -117,7 +139,9 @@ Google Cloud Run Deployment
 | Cloud Run | Deploys and hosts the application |
 | Docker | Containerizes the application for cloud deployment |
 
-## Tech Stack
+---
+
+## 🛠️ Tech Stack
 
 | Technology | Usage |
 |---|---|
@@ -129,23 +153,29 @@ Google Cloud Run Deployment
 | Google Cloud Run | Cloud deployment |
 | Docker | Containerized deployment |
 
-## Project Structure
+---
+
+## 📂 Project Structure
 
 ```text
 CyberGuard-AI/
-|-- .streamlit/
-|   |-- config.toml
-|-- app.py
-|-- requirements.txt
-|-- Dockerfile
-|-- .gitignore
-|-- .dockerignore
-|-- README.md
+│
+├── .streamlit/
+│   └── secrets.toml
+│
+├── app.py
+├── requirements.txt
+├── Dockerfile
+├── .gitignore
+├── .dockerignore
+└── README.md
 ```
 
-## Environment Variables
+---
 
-The app runs in demo mode without credentials.
+## ⚙️ Environment Variables
+
+The app runs in **demo mode** without credentials.
 
 To use live Gemini and Google Cloud persistence, set the following environment variables:
 
@@ -156,9 +186,11 @@ GOOGLE_CLOUD_PROJECT=your-project-id
 CYBERGUARD_BUCKET=your-cloud-storage-bucket
 ```
 
-## Streamlit Secrets Setup
+---
 
-For local Streamlit development, create this file:
+## 🔐 Streamlit Secrets Setup
+
+For local Streamlit development, create a file:
 
 ```text
 .streamlit/secrets.toml
@@ -173,17 +205,27 @@ GOOGLE_CLOUD_PROJECT = "your-project-id"
 CYBERGUARD_BUCKET = "your-cloud-storage-bucket"
 ```
 
-Do not commit `.streamlit/secrets.toml` to GitHub. It contains sensitive credentials and is ignored by `.gitignore`.
+> Do not commit `.streamlit/secrets.toml` to GitHub.  
+> It contains sensitive credentials and should remain ignored by `.gitignore`.
 
-## Run Locally
+---
 
-Install dependencies:
+## ▶️ Run Locally
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/Atharvagajbe/CyberGuard-AI.git
+cd CyberGuard-AI
+```
+
+### 2. Install Dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-Start the application:
+### 3. Start the Application
 
 ```bash
 streamlit run app.py
@@ -195,7 +237,9 @@ The app will usually open at:
 http://localhost:8501
 ```
 
-## Demo Mode
+---
+
+## 🧪 Demo Mode
 
 CyberGuard AI can run without a Gemini API key.
 
@@ -209,15 +253,17 @@ Demo mode supports sample detection for:
 - SQL injection code
 - Hardcoded password examples
 
-## Run with Docker
+---
 
-Build the Docker image:
+## 🐳 Run with Docker
+
+### Build Docker Image
 
 ```bash
 docker build -t cyberguard-ai .
 ```
 
-Run the Docker container:
+### Run Docker Container
 
 ```bash
 docker run -p 8080:8080 cyberguard-ai
@@ -229,21 +275,23 @@ The app will be available at:
 http://localhost:8080
 ```
 
-## Deploy to Google Cloud Run
+---
 
-Login to Google Cloud:
+## ☁️ Deploy to Google Cloud Run
+
+### 1. Login to Google Cloud
 
 ```bash
 gcloud auth login
 ```
 
-Set your Google Cloud project:
+### 2. Set Your Google Cloud Project
 
 ```bash
 gcloud config set project your-project-id
 ```
 
-Deploy to Cloud Run:
+### 3. Deploy to Cloud Run
 
 ```bash
 gcloud run deploy cyberguard-ai \
@@ -253,7 +301,9 @@ gcloud run deploy cyberguard-ai \
   --set-env-vars GEMINI_API_KEY=your-gemini-api-key,GOOGLE_CLOUD_PROJECT=your-project-id,CYBERGUARD_BUCKET=your-cloud-storage-bucket
 ```
 
-## Application Workflow
+---
+
+## 🔄 Application Workflow
 
 ```text
 User enters log, email, or code
@@ -274,7 +324,9 @@ Result is displayed in the Streamlit UI
 Optional storage in Firestore / Cloud Storage
 ```
 
-## Example Use Cases
+---
+
+## 📊 Example Use Cases
 
 CyberGuard AI can be used for:
 
@@ -287,7 +339,9 @@ CyberGuard AI can be used for:
 - Cloud security project demonstration
 - Academic Gemini API capability showcase
 
-## Security Considerations
+---
+
+## 🔐 Security Considerations
 
 This project is designed for educational and demonstration purposes.
 
@@ -300,7 +354,9 @@ Important notes:
 - AI output should support human analysis, not replace it.
 - Always review code fixes manually before using them in production.
 
-## Future Improvements
+---
+
+## 🚧 Future Improvements
 
 Possible future enhancements:
 
@@ -315,7 +371,9 @@ Possible future enhancements:
 - Add Google Secret Manager integration
 - Add CI/CD pipeline using GitHub Actions
 
-## Author
+---
+
+## 👨‍💻 Author
 
 **Atharva Gajbe**
 
@@ -327,7 +385,14 @@ Master's student in Applied Computer Science with an interest in:
 - AI-powered security tools
 - Full-stack development
 
-## License
+### Connect
+
+- GitHub: [Atharvagajbe](https://github.com/Atharvagajbe)
+- LinkedIn: [Atharva Gajbe](https://www.linkedin.com/in/atharva-gajbe-50a2571aa)
+
+---
+
+## 📄 License
 
 This project is created for educational and demonstration purposes.
 
@@ -337,7 +402,15 @@ Recommended license for this project:
 MIT License
 ```
 
-## Summary
+---
+
+## ⭐ Support
+
+If you found this project useful, consider giving it a star on GitHub.
+
+---
+
+## 🏁 Summary
 
 CyberGuard AI is a practical Gemini-based cybersecurity assistant that combines:
 
