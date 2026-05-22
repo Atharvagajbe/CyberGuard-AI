@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/cyberguard-banner.png" alt="CyberGuard AI Banner" width="100%">
+</p>
+
 # 🛡️ CyberGuard AI
 
 **CyberGuard AI** is a Gemini-powered cybersecurity assistant built with **Python** and **Streamlit**.  
@@ -373,37 +377,6 @@ Possible future enhancements:
 
 ---
 
-## 👨‍💻 Author
-
-**Atharva Gajbe**
-
-Master's student in Applied Computer Science with an interest in:
-
-- Cybersecurity
-- Secure coding
-- Cloud security
-- AI-powered security tools
-- Full-stack development
-
-### Connect
-
-- GitHub: [Atharvagajbe](https://github.com/Atharvagajbe)
-- LinkedIn: [Atharva Gajbe](https://www.linkedin.com/in/atharva-gajbe-50a2571aa)
-
----
-
-## 📄 License
-
-This project is created for educational and demonstration purposes.
-
-Recommended license for this project:
-
-```text
-MIT License
-```
-
----
-
 ## ⭐ Support
 
 If you found this project useful, consider giving it a star on GitHub.
@@ -423,3 +396,15 @@ CyberGuard AI is a practical Gemini-based cybersecurity assistant that combines:
 - Cloud Run deployment readiness
 
 It is a strong portfolio project for demonstrating AI, cybersecurity, cloud, and secure software development skills.
+
+---
+
+## 📄 License
+
+This project is created for educational and demonstration purposes.
+
+Recommended license for this project:
+
+```text
+MIT License
+```
