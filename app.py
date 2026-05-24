@@ -23,6 +23,14 @@ Port scanning activity found."""
 DEFAULT_CODE_INPUT = """query = "SELECT * FROM users WHERE username = '" + username + "'" """
 
 
+RISK_COLORS = {
+    "Low": "#0f8a5f",
+    "Medium": "#b7791f",
+    "High": "#d13f32",
+    "Critical": "#8f1d2c",
+}
+
+
 def get_setting(name, default=None):
     if os.getenv(name):
         return os.getenv(name)
@@ -35,8 +43,229 @@ def get_setting(name, default=None):
 def configure_page():
     st.set_page_config(
         page_title="CyberGuard AI",
-        page_icon="security",
+        page_icon=":shield:",
         layout="wide",
+    )
+    st.markdown(
+        """
+        <style>
+            :root {
+                --cg-ink: #102033;
+                --cg-muted: #607087;
+                --cg-line: #d8e2ee;
+                --cg-soft: #f4f8fb;
+                --cg-panel: #ffffff;
+                --cg-cyan: #12a8b4;
+                --cg-green: #15996d;
+                --cg-blue: #2563eb;
+            }
+
+            .stApp {
+                background:
+                    radial-gradient(circle at top left, rgba(18, 168, 180, 0.16), transparent 30rem),
+                    linear-gradient(180deg, #f7fbfd 0%, #eef5f8 48%, #f8fafc 100%);
+                color: var(--cg-ink);
+            }
+
+            .block-container {
+                max-width: 1180px;
+                padding-top: 2rem;
+                padding-bottom: 3rem;
+            }
+
+            h1, h2, h3 {
+                letter-spacing: 0;
+            }
+
+            div[data-testid="stTabs"] button {
+                border-radius: 0.5rem 0.5rem 0 0;
+                color: #31445c;
+                font-weight: 700;
+            }
+
+            div[data-testid="stTabs"] button[aria-selected="true"] {
+                color: #0f7280;
+                border-bottom-color: #12a8b4;
+            }
+
+            div[data-testid="stTextArea"] textarea {
+                border: 1px solid var(--cg-line);
+                border-radius: 0.6rem;
+                background: #fbfdff;
+                font-size: 0.95rem;
+                line-height: 1.55;
+                box-shadow: inset 0 1px 2px rgba(16, 32, 51, 0.04);
+            }
+
+            .stButton > button {
+                border-radius: 0.55rem;
+                font-weight: 800;
+                min-height: 2.8rem;
+                border: 0;
+                box-shadow: 0 10px 20px rgba(18, 168, 180, 0.18);
+            }
+
+            .stButton > button[kind="primary"] {
+                background: linear-gradient(135deg, #0e7490, #12a8b4);
+            }
+
+            .cg-hero {
+                border: 1px solid rgba(18, 168, 180, 0.2);
+                border-radius: 0.8rem;
+                padding: 1.6rem;
+                background:
+                    linear-gradient(135deg, rgba(16, 32, 51, 0.96), rgba(11, 79, 98, 0.9)),
+                    url("assets/cyberguard-banner.png");
+                background-size: cover;
+                background-position: center;
+                color: white;
+                box-shadow: 0 18px 50px rgba(16, 32, 51, 0.18);
+                margin-bottom: 1.3rem;
+            }
+
+            .cg-hero h1 {
+                margin: 0 0 0.45rem;
+                font-size: 3rem;
+                line-height: 1;
+            }
+
+            .cg-hero p {
+                max-width: 46rem;
+                margin: 0;
+                color: rgba(255, 255, 255, 0.82);
+                font-size: 1.05rem;
+                line-height: 1.6;
+            }
+
+            .cg-kicker {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.45rem;
+                padding: 0.35rem 0.65rem;
+                margin-bottom: 1rem;
+                border: 1px solid rgba(255, 255, 255, 0.26);
+                border-radius: 999px;
+                color: rgba(255, 255, 255, 0.86);
+                background: rgba(255, 255, 255, 0.1);
+                font-size: 0.8rem;
+                font-weight: 800;
+                text-transform: uppercase;
+            }
+
+            .cg-mode {
+                border: 1px solid var(--cg-line);
+                border-radius: 0.75rem;
+                padding: 0.85rem 1rem;
+                background: rgba(255, 255, 255, 0.74);
+                color: #31445c;
+                margin-bottom: 1.2rem;
+            }
+
+            .cg-mode strong {
+                color: #0f7280;
+            }
+
+            .cg-panel {
+                border: 1px solid var(--cg-line);
+                border-radius: 0.75rem;
+                padding: 1.05rem;
+                background: rgba(255, 255, 255, 0.82);
+                box-shadow: 0 12px 32px rgba(40, 64, 88, 0.08);
+                margin: 0.7rem 0 1rem;
+            }
+
+            .cg-section-title {
+                margin: 0 0 0.25rem;
+                font-size: 1.35rem;
+                font-weight: 850;
+                color: var(--cg-ink);
+            }
+
+            .cg-section-copy {
+                margin: 0 0 1rem;
+                color: var(--cg-muted);
+                line-height: 1.55;
+            }
+
+            .cg-result {
+                border: 1px solid var(--cg-line);
+                border-radius: 0.75rem;
+                padding: 1rem;
+                background: #ffffff;
+                box-shadow: 0 10px 30px rgba(40, 64, 88, 0.08);
+                margin-top: 1rem;
+            }
+
+            .cg-result h3 {
+                margin: 0 0 0.8rem;
+                font-size: 1.05rem;
+            }
+
+            .cg-badge {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                min-width: 7rem;
+                padding: 0.55rem 0.8rem;
+                border-radius: 999px;
+                color: white;
+                font-weight: 850;
+                box-shadow: 0 8px 18px rgba(16, 32, 51, 0.14);
+            }
+
+            .cg-actions {
+                margin: 0.6rem 0 0;
+                padding: 0;
+                list-style: none;
+            }
+
+            .cg-actions li {
+                padding: 0.65rem 0.75rem;
+                margin: 0 0 0.45rem;
+                border: 1px solid #e0e9f2;
+                border-radius: 0.55rem;
+                background: #f8fbfd;
+            }
+
+            .cg-save-note {
+                color: var(--cg-muted);
+                font-size: 0.85rem;
+                margin-top: 0.8rem;
+            }
+
+            div[data-testid="stExpander"] {
+                border: 1px solid var(--cg-line);
+                border-radius: 0.7rem;
+                background: rgba(255, 255, 255, 0.75);
+            }
+
+            @media (max-width: 700px) {
+                .block-container {
+                    padding-top: 1rem;
+                }
+
+                .cg-hero {
+                    padding: 1.15rem;
+                }
+
+                .cg-hero h1 {
+                    font-size: 2.25rem;
+                }
+            }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def escape_html(value):
+    return (
+        str(value)
+        .replace("&", "&amp;")
+        .replace("<", "&lt;")
+        .replace(">", "&gt;")
+        .replace('"', "&quot;")
+        .replace("'", "&#x27;")
     )
 
 
@@ -196,30 +425,48 @@ def persist_result(kind, request_text, result):
 
 
 def render_status_badge(label):
-    color = {
-        "Low": "#15803d",
-        "Medium": "#ca8a04",
-        "High": "#dc2626",
-        "Critical": "#991b1b",
-    }.get(label, "#334155")
+    st.markdown(status_badge_html(label), unsafe_allow_html=True)
+
+
+def status_badge_html(label):
+    color = RISK_COLORS.get(label, "#334155")
+    return f"<span class='cg-badge' style='background:{color}'>{escape_html(label)}</span>"
+
+
+def render_header():
+    mode = "Gemini API" if has_gemini() else "Demo mode"
     st.markdown(
-        f"<span style='background:{color};color:white;padding:0.35rem 0.6rem;border-radius:0.4rem;font-weight:700'>{label}</span>",
+        f"""
+        <section class="cg-hero">
+            <div class="cg-kicker">Cybersecurity triage assistant</div>
+            <h1>CyberGuard AI</h1>
+            <p>
+                Analyze suspicious logs, phishing messages, and risky code with a focused
+                Gemini-powered workflow built for fast security review.
+            </p>
+        </section>
+        <div class="cg-mode">
+            Current model mode: <strong>{mode}</strong>. Add <code>GEMINI_API_KEY</code>
+            to use live Gemini analysis.
+        </div>
+        """,
         unsafe_allow_html=True,
     )
 
 
-def render_header():
-    st.title("CyberGuard AI")
-    st.caption("A Gemini-based cybersecurity assistant for summarization and secure code debugging.")
-
-    mode = "Gemini API" if has_gemini() else "Demo mode"
-    st.info(
-        f"Current model mode: {mode}. Add `GEMINI_API_KEY` to use live Gemini analysis."
-    )
-
-
 def render_summarizer_tab():
-    st.subheader("Security Log / Email Summarizer")
+    st.markdown(
+        """
+        <div class="cg-panel">
+            <p class="cg-section-title">Security Log / Email Summarizer</p>
+            <p class="cg-section-copy">
+                Paste a suspicious event, phishing message, or incident note to get a
+                concise triage summary and action list.
+            </p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
     security_text = st.text_area(
         "Paste security logs, phishing emails, or incident reports",
         value=DEFAULT_LOG_INPUT,
@@ -232,19 +479,50 @@ def render_summarizer_tab():
 
         left, right = st.columns([2, 1])
         with left:
-            st.markdown(f"**Summary:** {result['summary']}")
-            st.markdown("**Recommended Actions:**")
-            for action in result["recommended_actions"]:
-                st.write(f"- {action}")
+            actions = "".join(
+                f"<li>{escape_html(action)}</li>" for action in result["recommended_actions"]
+            )
+            st.markdown(
+                f"""
+                <div class="cg-result">
+                    <h3>Security Summary</h3>
+                    <p>{escape_html(result["summary"])}</p>
+                    <h3>Recommended Actions</h3>
+                    <ul class="cg-actions">{actions}</ul>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
         with right:
-            st.markdown("**Risk Level**")
-            render_status_badge(result["risk_level"])
+            st.markdown(
+                f"""
+                <div class="cg-result">
+                    <h3>Risk Level</h3>
+                    {status_badge_html(result["risk_level"])}
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
 
-        st.caption(f"Saved to Firestore: {persist[0]} | Saved to Cloud Storage: {persist[1]}")
+        st.markdown(
+            f"<p class='cg-save-note'>Saved to Firestore: {persist[0]} | Saved to Cloud Storage: {persist[1]}</p>",
+            unsafe_allow_html=True,
+        )
 
 
 def render_code_debugger_tab():
-    st.subheader("Secure Code Debugger")
+    st.markdown(
+        """
+        <div class="cg-panel">
+            <p class="cg-section-title">Secure Code Debugger</p>
+            <p class="cg-section-copy">
+                Drop in a snippet to identify the biggest security issue, understand the
+                risk, and generate a safer replacement pattern.
+            </p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
     code_text = st.text_area(
         "Paste insecure or suspicious code",
         value=DEFAULT_CODE_INPUT,
@@ -257,15 +535,35 @@ def render_code_debugger_tab():
 
         left, right = st.columns([2, 1])
         with left:
-            st.markdown(f"**Vulnerability:** {result['vulnerability']}")
-            st.markdown(f"**Problem:** {result['problem']}")
-            st.markdown(f"**Secure Fix:** {result['secure_fix']}")
+            st.markdown(
+                f"""
+                <div class="cg-result">
+                    <h3>Vulnerability</h3>
+                    <p>{escape_html(result["vulnerability"])}</p>
+                    <h3>Problem</h3>
+                    <p>{escape_html(result["problem"])}</p>
+                    <h3>Secure Fix</h3>
+                    <p>{escape_html(result["secure_fix"])}</p>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
             st.code(result["fixed_code"], language="python")
         with right:
-            st.markdown("**Severity**")
-            render_status_badge(result["severity"])
+            st.markdown(
+                f"""
+                <div class="cg-result">
+                    <h3>Severity</h3>
+                    {status_badge_html(result["severity"])}
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
 
-        st.caption(f"Saved to Firestore: {persist[0]} | Saved to Cloud Storage: {persist[1]}")
+        st.markdown(
+            f"<p class='cg-save-note'>Saved to Firestore: {persist[0]} | Saved to Cloud Storage: {persist[1]}</p>",
+            unsafe_allow_html=True,
+        )
 
 
 def main():
