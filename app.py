@@ -1,6 +1,7 @@
 import json
 import os
 import re
+from string import Template
 from datetime import datetime, timezone
 
 import streamlit as st
@@ -30,6 +31,43 @@ RISK_COLORS = {
     "Critical": "#8f1d2c",
 }
 
+THEMES = {
+    "Light": {
+        "app_bg": "radial-gradient(circle at top left, rgba(18, 168, 180, 0.16), transparent 30rem), linear-gradient(180deg, #f7fbfd 0%, #eef5f8 48%, #f8fafc 100%)",
+        "ink": "#102033",
+        "muted": "#53677f",
+        "line": "#cbd9e8",
+        "panel": "rgba(255, 255, 255, 0.9)",
+        "panel_solid": "#ffffff",
+        "field": "#ffffff",
+        "field_text": "#102033",
+        "field_label": "#24384f",
+        "field_placeholder": "#708096",
+        "action": "#f7fafc",
+        "shadow": "0 12px 32px rgba(40, 64, 88, 0.1)",
+        "tab": "#31445c",
+        "accent": "#0f7280",
+        "code_bg": "#f6f9fc",
+    },
+    "Dark": {
+        "app_bg": "radial-gradient(circle at top left, rgba(20, 184, 166, 0.14), transparent 30rem), linear-gradient(180deg, #0b1320 0%, #101827 52%, #0d1421 100%)",
+        "ink": "#edf6ff",
+        "muted": "#a8b7ca",
+        "line": "#284057",
+        "panel": "rgba(15, 27, 43, 0.92)",
+        "panel_solid": "#111e30",
+        "field": "#0c1727",
+        "field_text": "#f4f8ff",
+        "field_label": "#d9e7f6",
+        "field_placeholder": "#8fa3ba",
+        "action": "#15243a",
+        "shadow": "0 14px 38px rgba(0, 0, 0, 0.28)",
+        "tab": "#c7d5e6",
+        "accent": "#2dd4bf",
+        "code_bg": "#08111f",
+    },
+}
+
 
 def get_setting(name, default=None):
     if os.getenv(name):
@@ -46,24 +84,38 @@ def configure_page():
         page_icon=":shield:",
         layout="wide",
     )
-    st.markdown(
+    theme_name = st.sidebar.radio(
+        "Theme",
+        ["Light", "Dark"],
+        horizontal=True,
+        key="cyberguard_theme",
+    )
+    theme = THEMES[theme_name]
+    css = Template(
         """
         <style>
             :root {
-                --cg-ink: #102033;
-                --cg-muted: #607087;
-                --cg-line: #d8e2ee;
-                --cg-soft: #f4f8fb;
-                --cg-panel: #ffffff;
+                --cg-ink: $ink;
+                --cg-muted: $muted;
+                --cg-line: $line;
+                --cg-panel: $panel;
+                --cg-panel-solid: $panel_solid;
+                --cg-field: $field;
+                --cg-field-text: $field_text;
+                --cg-field-label: $field_label;
+                --cg-field-placeholder: $field_placeholder;
+                --cg-action: $action;
+                --cg-shadow: $shadow;
+                --cg-tab: $tab;
+                --cg-accent: $accent;
+                --cg-code-bg: $code_bg;
                 --cg-cyan: #12a8b4;
                 --cg-green: #15996d;
                 --cg-blue: #2563eb;
             }
 
             .stApp {
-                background:
-                    radial-gradient(circle at top left, rgba(18, 168, 180, 0.16), transparent 30rem),
-                    linear-gradient(180deg, #f7fbfd 0%, #eef5f8 48%, #f8fafc 100%);
+                background: $app_bg;
                 color: var(--cg-ink);
             }
 
@@ -75,26 +127,60 @@ def configure_page():
 
             h1, h2, h3 {
                 letter-spacing: 0;
+                color: var(--cg-ink);
+            }
+
+            p, li, label, span, div[data-testid="stMarkdownContainer"] {
+                color: var(--cg-ink);
+            }
+
+            section[data-testid="stSidebar"] {
+                background: var(--cg-panel-solid);
+                border-right: 1px solid var(--cg-line);
+            }
+
+            section[data-testid="stSidebar"] label,
+            section[data-testid="stSidebar"] p,
+            section[data-testid="stSidebar"] span {
+                color: var(--cg-ink);
+            }
+
+            div[data-testid="stWidgetLabel"] label,
+            div[data-testid="stWidgetLabel"] p {
+                color: var(--cg-field-label);
+                font-weight: 750;
             }
 
             div[data-testid="stTabs"] button {
                 border-radius: 0.5rem 0.5rem 0 0;
-                color: #31445c;
+                color: var(--cg-tab);
                 font-weight: 700;
             }
 
             div[data-testid="stTabs"] button[aria-selected="true"] {
-                color: #0f7280;
-                border-bottom-color: #12a8b4;
+                color: var(--cg-accent);
+                border-bottom-color: var(--cg-accent);
             }
 
             div[data-testid="stTextArea"] textarea {
                 border: 1px solid var(--cg-line);
                 border-radius: 0.6rem;
-                background: #fbfdff;
+                background: var(--cg-field);
+                color: var(--cg-field-text);
+                caret-color: var(--cg-accent);
                 font-size: 0.95rem;
                 line-height: 1.55;
                 box-shadow: inset 0 1px 2px rgba(16, 32, 51, 0.04);
+            }
+
+            div[data-testid="stTextArea"] textarea::placeholder {
+                color: var(--cg-field-placeholder);
+                opacity: 1;
+            }
+
+            div[data-testid="stTextArea"] textarea:focus {
+                border-color: var(--cg-accent);
+                box-shadow: 0 0 0 0.15rem rgba(18, 168, 180, 0.2);
             }
 
             .stButton > button {
@@ -102,6 +188,7 @@ def configure_page():
                 font-weight: 800;
                 min-height: 2.8rem;
                 border: 0;
+                color: #ffffff;
                 box-shadow: 0 10px 20px rgba(18, 168, 180, 0.18);
             }
 
@@ -156,21 +243,29 @@ def configure_page():
                 border: 1px solid var(--cg-line);
                 border-radius: 0.75rem;
                 padding: 0.85rem 1rem;
-                background: rgba(255, 255, 255, 0.74);
-                color: #31445c;
+                background: var(--cg-panel);
+                color: var(--cg-ink);
                 margin-bottom: 1.2rem;
             }
 
             .cg-mode strong {
-                color: #0f7280;
+                color: var(--cg-accent);
+            }
+
+            .cg-mode code {
+                color: var(--cg-ink);
+                background: var(--cg-code-bg);
+                border: 1px solid var(--cg-line);
+                border-radius: 0.3rem;
+                padding: 0.1rem 0.25rem;
             }
 
             .cg-panel {
                 border: 1px solid var(--cg-line);
                 border-radius: 0.75rem;
                 padding: 1.05rem;
-                background: rgba(255, 255, 255, 0.82);
-                box-shadow: 0 12px 32px rgba(40, 64, 88, 0.08);
+                background: var(--cg-panel);
+                box-shadow: var(--cg-shadow);
                 margin: 0.7rem 0 1rem;
             }
 
@@ -191,14 +286,20 @@ def configure_page():
                 border: 1px solid var(--cg-line);
                 border-radius: 0.75rem;
                 padding: 1rem;
-                background: #ffffff;
-                box-shadow: 0 10px 30px rgba(40, 64, 88, 0.08);
+                background: var(--cg-panel-solid);
+                color: var(--cg-ink);
+                box-shadow: var(--cg-shadow);
                 margin-top: 1rem;
             }
 
             .cg-result h3 {
                 margin: 0 0 0.8rem;
                 font-size: 1.05rem;
+                color: var(--cg-ink);
+            }
+
+            .cg-result p {
+                color: var(--cg-ink);
             }
 
             .cg-badge {
@@ -222,9 +323,10 @@ def configure_page():
             .cg-actions li {
                 padding: 0.65rem 0.75rem;
                 margin: 0 0 0.45rem;
-                border: 1px solid #e0e9f2;
+                border: 1px solid var(--cg-line);
                 border-radius: 0.55rem;
-                background: #f8fbfd;
+                background: var(--cg-action);
+                color: var(--cg-ink);
             }
 
             .cg-save-note {
@@ -236,7 +338,19 @@ def configure_page():
             div[data-testid="stExpander"] {
                 border: 1px solid var(--cg-line);
                 border-radius: 0.7rem;
-                background: rgba(255, 255, 255, 0.75);
+                background: var(--cg-panel);
+                color: var(--cg-ink);
+            }
+
+            div[data-testid="stExpander"] summary,
+            div[data-testid="stExpander"] p {
+                color: var(--cg-ink);
+            }
+
+            div[data-testid="stCodeBlock"] {
+                background: var(--cg-code-bg);
+                border: 1px solid var(--cg-line);
+                border-radius: 0.65rem;
             }
 
             @media (max-width: 700px) {
@@ -254,6 +368,9 @@ def configure_page():
             }
         </style>
         """,
+    ).substitute(theme)
+    st.markdown(
+        css,
         unsafe_allow_html=True,
     )
 
