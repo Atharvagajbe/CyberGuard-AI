@@ -190,6 +190,59 @@ GOOGLE_CLOUD_PROJECT=your-project-id
 CYBERGUARD_BUCKET=your-cloud-storage-bucket
 ```
 
+You can copy `.env.example` to `.env` for local development. Keep `.env` private.
+
+---
+
+## Google Cloud Setup
+
+### 1. Enable APIs
+
+Enable these APIs in your Google Cloud project:
+
+```bash
+gcloud services enable firestore.googleapis.com storage.googleapis.com run.googleapis.com cloudbuild.googleapis.com
+```
+
+### 2. Create Firestore
+
+Create a Firestore database in Native mode from the Google Cloud Console, or run:
+
+```bash
+gcloud firestore databases create --location=us-central1
+```
+
+The app writes documents to the `cyberguard_analyses` collection.
+
+### 3. Create a Cloud Storage bucket
+
+Bucket names must be globally unique:
+
+```bash
+gcloud storage buckets create gs://your-cloud-storage-bucket --location=us-central1
+```
+
+The app writes JSON reports under the `cyberguard/` prefix.
+
+### 4. Authenticate locally
+
+For local development, use Application Default Credentials:
+
+```bash
+gcloud auth application-default login
+gcloud config set project your-project-id
+```
+
+### 5. Verify inside the app
+
+Run Streamlit and open the `Google Cloud` tab:
+
+```bash
+streamlit run app.py
+```
+
+Use `Test Google Cloud Save` to confirm Firestore and Cloud Storage writes.
+
 ---
 
 ## 🔐 Streamlit Secrets Setup

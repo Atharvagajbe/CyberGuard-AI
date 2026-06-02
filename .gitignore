@@ -3,6 +3,8 @@
 streamlit.log
 streamlit.err.log
 streamlit.pid
+api.log
+api.err.log
 __pycache__/
 *.pyc
 .venv/
