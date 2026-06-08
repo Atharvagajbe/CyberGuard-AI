@@ -1,7 +1,7 @@
 .streamlit/secrets.toml
 .env
-streamlit.log
-streamlit.err.log
+streamlit*.log
+streamlit*.err.log
 streamlit.pid
 api.log
 api.err.log
