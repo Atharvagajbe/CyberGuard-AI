@@ -181,14 +181,17 @@ CyberGuard-AI/
 
 The app runs in **demo mode** without credentials.
 
-To use live Gemini and Google Cloud persistence, set the following environment variables:
+The recommended Google Cloud setup is Gemini on Vertex AI through the `google-genai` SDK and Application Default Credentials:
 
 ```bash
-GEMINI_API_KEY=your-gemini-api-key
-GEMINI_MODEL=gemini-2.0-flash
+GOOGLE_GENAI_USE_VERTEXAI=true
 GOOGLE_CLOUD_PROJECT=your-project-id
+GOOGLE_CLOUD_LOCATION=us-central1
+GEMINI_MODEL=gemini-2.0-flash
 CYBERGUARD_BUCKET=your-cloud-storage-bucket
 ```
+
+For personal projects where API keys are allowed, `GEMINI_API_KEY` is still supported as a fallback when `GOOGLE_GENAI_USE_VERTEXAI` is not enabled.
 
 You can copy `.env.example` to `.env` for local development. Keep `.env` private.
 
@@ -201,7 +204,7 @@ You can copy `.env.example` to `.env` for local development. Keep `.env` private
 Enable these APIs in your Google Cloud project:
 
 ```bash
-gcloud services enable firestore.googleapis.com storage.googleapis.com run.googleapis.com cloudbuild.googleapis.com
+gcloud services enable aiplatform.googleapis.com firestore.googleapis.com storage.googleapis.com run.googleapis.com cloudbuild.googleapis.com
 ```
 
 ### 2. Create Firestore
@@ -256,9 +259,10 @@ For local Streamlit development, create a file:
 Add your configuration:
 
 ```toml
-GEMINI_API_KEY = "your-gemini-api-key"
-GEMINI_MODEL = "gemini-2.0-flash"
+GOOGLE_GENAI_USE_VERTEXAI = "true"
 GOOGLE_CLOUD_PROJECT = "your-project-id"
+GOOGLE_CLOUD_LOCATION = "us-central1"
+GEMINI_MODEL = "gemini-2.0-flash"
 CYBERGUARD_BUCKET = "your-cloud-storage-bucket"
 ```
 
@@ -355,7 +359,7 @@ gcloud run deploy cyberguard-ai \
   --source . \
   --region us-central1 \
   --allow-unauthenticated \
-  --set-env-vars GEMINI_API_KEY=your-gemini-api-key,GOOGLE_CLOUD_PROJECT=your-project-id,CYBERGUARD_BUCKET=your-cloud-storage-bucket
+  --set-env-vars GOOGLE_GENAI_USE_VERTEXAI=true,GOOGLE_CLOUD_PROJECT=your-project-id,GOOGLE_CLOUD_LOCATION=us-central1,CYBERGUARD_BUCKET=your-cloud-storage-bucket
 ```
 
 ---

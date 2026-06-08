@@ -749,12 +749,50 @@ def escape_html(value):
     )
 
 
+def use_vertex_ai():
+    return str(get_setting("GOOGLE_GENAI_USE_VERTEXAI", "")).lower() in (
+        "1",
+        "true",
+        "yes",
+    )
+
+
+def has_vertex_ai_config():
+    return not is_placeholder(get_setting("GOOGLE_CLOUD_PROJECT")) and not is_placeholder(
+        get_setting("GOOGLE_CLOUD_LOCATION")
+    )
+
+
 def has_gemini():
-    return bool(get_setting("GEMINI_API_KEY")) and genai is not None
+    if genai is None:
+        return False
+    if use_vertex_ai():
+        return has_vertex_ai_config()
+    if get_setting("GEMINI_API_KEY"):
+        return True
+    return has_vertex_ai_config()
 
 
 def gemini_model():
+    project_id = get_setting("GOOGLE_CLOUD_PROJECT")
+    location = get_setting("GOOGLE_CLOUD_LOCATION")
+
+    if use_vertex_ai() or not get_setting("GEMINI_API_KEY"):
+        return genai.Client(vertexai=True, project=project_id, location=location)
+
     return genai.Client(api_key=get_setting("GEMINI_API_KEY"))
+
+
+def gemini_auth_mode():
+    if genai is None:
+        return "Demo mode"
+    if use_vertex_ai():
+        return "Vertex AI ADC" if has_vertex_ai_config() else "Vertex AI setup needed"
+    if get_setting("GEMINI_API_KEY"):
+        return "Gemini API key"
+    if has_gemini():
+        return "Vertex AI ADC"
+    return "Demo mode"
 
 
 def extract_json(text):
@@ -947,12 +985,23 @@ def cloud_status_items():
     project_id = get_setting("GOOGLE_CLOUD_PROJECT")
     bucket_name = get_setting("CYBERGUARD_BUCKET")
     gemini_key = get_setting("GEMINI_API_KEY")
+    location = get_setting("GOOGLE_CLOUD_LOCATION")
+    vertex_enabled = use_vertex_ai()
+    vertex_ready = has_vertex_ai_config()
 
     return [
         {
-            "name": "Gemini API",
-            "ready": bool(gemini_key) and genai is not None,
-            "detail": "GEMINI_API_KEY is configured." if gemini_key else "Add GEMINI_API_KEY for live analysis.",
+            "name": "Gemini / Vertex AI",
+            "ready": has_gemini(),
+            "detail": (
+                f"Using Vertex AI ADC in {location}."
+                if vertex_enabled and vertex_ready
+                else "Vertex AI is enabled. Set GOOGLE_CLOUD_PROJECT and GOOGLE_CLOUD_LOCATION."
+                if vertex_enabled
+                else "GEMINI_API_KEY is configured."
+                if gemini_key
+                else "Set GOOGLE_GENAI_USE_VERTEXAI=true, GOOGLE_CLOUD_PROJECT, and GOOGLE_CLOUD_LOCATION."
+            ),
         },
         {
             "name": "Firestore",
@@ -990,7 +1039,7 @@ def status_pill_html(label):
 
 
 def render_header():
-    mode = "Gemini API" if has_gemini() else "Demo mode"
+    mode = gemini_auth_mode()
     st.markdown(
         f"""
         <nav class="cg-nav">
@@ -1035,8 +1084,8 @@ def render_header():
             </div>
         </section>
         <div class="cg-mode">
-            Current model mode: <strong>{mode}</strong>. Add <code>GEMINI_API_KEY</code>
-            to use live Gemini analysis.
+            Current model mode: <strong>{mode}</strong>. Use <code>GOOGLE_GENAI_USE_VERTEXAI=true</code>
+            with Application Default Credentials for Google Cloud access.
         </div>
         """,
         unsafe_allow_html=True,
@@ -1193,9 +1242,10 @@ def render_cloud_tab():
         unsafe_allow_html=True,
     )
     st.code(
-        """GEMINI_API_KEY=your-gemini-api-key
-GEMINI_MODEL=gemini-2.0-flash
+        """GOOGLE_GENAI_USE_VERTEXAI=true
 GOOGLE_CLOUD_PROJECT=your-project-id
+GOOGLE_CLOUD_LOCATION=us-central1
+GEMINI_MODEL=gemini-2.0-flash
 CYBERGUARD_BUCKET=your-cloud-storage-bucket""",
         language="bash",
     )
