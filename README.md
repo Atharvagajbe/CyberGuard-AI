@@ -181,14 +181,70 @@ CyberGuard-AI/
 
 The app runs in **demo mode** without credentials.
 
-To use live Gemini and Google Cloud persistence, set the following environment variables:
+The recommended Google Cloud setup is Gemini on Vertex AI through the `google-genai` SDK and Application Default Credentials:
 
 ```bash
-GEMINI_API_KEY=your-gemini-api-key
-GEMINI_MODEL=gemini-2.0-flash
+GOOGLE_GENAI_USE_VERTEXAI=true
 GOOGLE_CLOUD_PROJECT=your-project-id
+GOOGLE_CLOUD_LOCATION=us-central1
+GEMINI_MODEL=gemini-2.0-flash
 CYBERGUARD_BUCKET=your-cloud-storage-bucket
 ```
+
+For personal projects where API keys are allowed, `GEMINI_API_KEY` is still supported as a fallback when `GOOGLE_GENAI_USE_VERTEXAI` is not enabled.
+
+You can copy `.env.example` to `.env` for local development. Keep `.env` private.
+
+---
+
+## Google Cloud Setup
+
+### 1. Enable APIs
+
+Enable these APIs in your Google Cloud project:
+
+```bash
+gcloud services enable aiplatform.googleapis.com firestore.googleapis.com storage.googleapis.com run.googleapis.com cloudbuild.googleapis.com
+```
+
+### 2. Create Firestore
+
+Create a Firestore database in Native mode from the Google Cloud Console, or run:
+
+```bash
+gcloud firestore databases create --location=us-central1
+```
+
+The app writes documents to the `cyberguard_analyses` collection.
+
+### 3. Create a Cloud Storage bucket
+
+Bucket names must be globally unique:
+
+```bash
+gcloud storage buckets create gs://your-cloud-storage-bucket --location=us-central1
+```
+
+The app writes JSON reports under the `cyberguard/` prefix.
+
+### 4. Authenticate locally
+
+For local development, use Application Default Credentials:
+
+```bash
+gcloud auth application-default login
+gcloud config set project your-project-id
+```
+
+### 5. Verify inside the app
+
+Run Streamlit and open the `Google Cloud` tab:
+
+```bash
+streamlit run app.py
+```
+
+Use `Test Google Cloud Save` to confirm Firestore and Cloud Storage writes.
 
 ---
 
@@ -203,9 +259,10 @@ For local Streamlit development, create a file:
 Add your configuration:
 
 ```toml
-GEMINI_API_KEY = "your-gemini-api-key"
-GEMINI_MODEL = "gemini-2.0-flash"
+GOOGLE_GENAI_USE_VERTEXAI = "true"
 GOOGLE_CLOUD_PROJECT = "your-project-id"
+GOOGLE_CLOUD_LOCATION = "us-central1"
+GEMINI_MODEL = "gemini-2.0-flash"
 CYBERGUARD_BUCKET = "your-cloud-storage-bucket"
 ```
 
@@ -302,7 +359,7 @@ gcloud run deploy cyberguard-ai \
   --source . \
   --region us-central1 \
   --allow-unauthenticated \
-  --set-env-vars GEMINI_API_KEY=your-gemini-api-key,GOOGLE_CLOUD_PROJECT=your-project-id,CYBERGUARD_BUCKET=your-cloud-storage-bucket
+  --set-env-vars GOOGLE_GENAI_USE_VERTEXAI=true,GOOGLE_CLOUD_PROJECT=your-project-id,GOOGLE_CLOUD_LOCATION=us-central1,CYBERGUARD_BUCKET=your-cloud-storage-bucket
 ```
 
 ---
