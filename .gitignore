@@ -8,3 +8,11 @@ api.err.log
 __pycache__/
 *.pyc
 .venv/
+google-cloud-sdk/
+cloud_env.bat
+install_mode
+supercloud-16x16.ico
+uninstaller.exe
+*.exe
+service-account.json
+*-credentials.json

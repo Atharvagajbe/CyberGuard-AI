@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from app import debug_secure_code, summarize_security_text
+from app import debug_secure_code, persist_result, summarize_security_text
 
 
 def load_env_file():
@@ -45,9 +45,13 @@ def health_check():
 
 @api.post("/summarize")
 def summarize(payload: AnalyzeRequest):
-    return summarize_security_text(payload.text)
+    result = summarize_security_text(payload.text)
+    persist_result("summary", payload.text, result)
+    return result
 
 
 @api.post("/debug-code")
 def debug_code(payload: AnalyzeRequest):
-    return debug_secure_code(payload.text)
+    result = debug_secure_code(payload.text)
+    persist_result("code-debug", payload.text, result)
+    return result
