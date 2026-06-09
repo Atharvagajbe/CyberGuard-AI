@@ -773,14 +773,20 @@ def has_gemini():
     return has_vertex_ai_config()
 
 
+_gemini_client = None
+
+
 def gemini_model():
+    global _gemini_client
+    if _gemini_client is not None:
+        return _gemini_client
     project_id = get_setting("GOOGLE_CLOUD_PROJECT")
     location = get_setting("GOOGLE_CLOUD_LOCATION")
-
     if use_vertex_ai() or not get_setting("GEMINI_API_KEY"):
-        return genai.Client(vertexai=True, project=project_id, location=location)
-
-    return genai.Client(api_key=get_setting("GEMINI_API_KEY"))
+        _gemini_client = genai.Client(vertexai=True, project=project_id, location=location)
+    else:
+        _gemini_client = genai.Client(api_key=get_setting("GEMINI_API_KEY"))
+    return _gemini_client
 
 
 def gemini_auth_mode():
@@ -813,7 +819,10 @@ def call_gemini_json(prompt, fallback):
         )
         return extract_json(response.text)
     except Exception as exc:
-        st.warning(f"Gemini live analysis failed, using demo mode instead. Details: {exc}")
+        try:
+            st.warning(f"Gemini live analysis failed, using demo mode instead. Details: {exc}")
+        except Exception:
+            pass
         return fallback()
 
 
@@ -946,6 +955,40 @@ def save_to_cloud_storage(blob_name, payload):
         return {"saved": True, "detail": f"Saved to gs://{bucket_name}/{blob_name}."}
     except Exception as exc:
         return {"saved": False, "detail": f"Cloud Storage error: {short_error(exc)}"}
+
+
+CHAT_SYSTEM_PROMPT = """You are CyberGuard AI, an expert cybersecurity assistant.
+Help users analyze threats, investigate incidents, assess vulnerabilities, and apply
+security best practices. Be concise, accurate, and actionable."""
+
+
+def chat_with_gemini(messages):
+    def fallback():
+        return {
+            "response": (
+                "I'm running in demo mode — connect the API for live AI responses. "
+                "I can help with threat analysis, incident response, vulnerability assessment, and security best practices."
+            )
+        }
+
+    if not has_gemini():
+        return fallback()
+
+    try:
+        from google.genai import types
+
+        contents = [
+            types.Content(role=msg["role"], parts=[types.Part(text=msg["content"])])
+            for msg in messages
+        ]
+        response = gemini_model().models.generate_content(
+            model=get_setting("GEMINI_MODEL", "gemini-2.0-flash"),
+            contents=contents,
+            config=types.GenerateContentConfig(system_instruction=CHAT_SYSTEM_PROMPT),
+        )
+        return {"response": response.text}
+    except Exception as exc:
+        return {"response": f"Error: {short_error(exc)}"}
 
 
 def persist_result(kind, request_text, result):
