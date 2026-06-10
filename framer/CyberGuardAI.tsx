@@ -2,7 +2,12 @@ import * as React from "react"
 import { addPropertyControls, ControlType } from "framer"
 
 type ThemeName = "light" | "dark"
-type TabName = "summary" | "code"
+type TabName = "summary" | "code" | "chat"
+
+type ChatMessage = {
+    role: "user" | "model"
+    content: string
+}
 
 type SummaryResult = {
     summary: string
@@ -160,6 +165,30 @@ async function callApi<T>(apiEndpoint: string | undefined, path: string, text: s
     }
 }
 
+async function callChatApi(
+    apiEndpoint: string | undefined,
+    messages: ChatMessage[]
+): Promise<{ response: string }> {
+    const fallback = () => ({
+        response:
+            "I'm in demo mode — connect the API for live AI responses. I can help with threat analysis, incident response, and vulnerability assessment.",
+    })
+
+    if (!apiEndpoint) return fallback()
+
+    try {
+        const res = await fetch(`${apiEndpoint.replace(/\/$/, "")}/chat`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ messages }),
+        })
+        if (!res.ok) throw new Error(`Request failed with ${res.status}`)
+        return (await res.json()) as { response: string }
+    } catch {
+        return fallback()
+    }
+}
+
 export default function CyberGuardAI(props: Props) {
     const { apiEndpoint, defaultTheme = "light" } = props
     const [themeName, setThemeName] = React.useState<ThemeName>(defaultTheme)
@@ -169,7 +198,15 @@ export default function CyberGuardAI(props: Props) {
     const [summaryResult, setSummaryResult] = React.useState<SummaryResult | null>(null)
     const [codeResult, setCodeResult] = React.useState<CodeResult | null>(null)
     const [loading, setLoading] = React.useState(false)
+    const [chatMessages, setChatMessages] = React.useState<ChatMessage[]>([])
+    const [chatInput, setChatInput] = React.useState("")
+    const [chatLoading, setChatLoading] = React.useState(false)
+    const chatEndRef = React.useRef<HTMLDivElement>(null)
     const theme = palette[themeName]
+
+    React.useEffect(() => {
+        chatEndRef.current?.scrollIntoView({ behavior: "smooth" })
+    }, [chatMessages])
 
     async function analyzeSummary() {
         setLoading(true)
@@ -193,6 +230,18 @@ export default function CyberGuardAI(props: Props) {
         )
         setCodeResult(result)
         setLoading(false)
+    }
+
+    async function sendChatMessage() {
+        if (!chatInput.trim() || chatLoading) return
+        const userMsg: ChatMessage = { role: "user", content: chatInput.trim() }
+        const updated = [...chatMessages, userMsg]
+        setChatMessages(updated)
+        setChatInput("")
+        setChatLoading(true)
+        const result = await callChatApi(apiEndpoint, updated)
+        setChatMessages([...updated, { role: "model", content: result.response }])
+        setChatLoading(false)
     }
 
     const styles = makeStyles(theme)
@@ -245,9 +294,61 @@ export default function CyberGuardAI(props: Props) {
                 >
                     Secure Code Debugger
                 </button>
+                <button
+                    type="button"
+                    style={tabButton(activeTab === "chat", theme)}
+                    onClick={() => setActiveTab("chat")}
+                >
+                    AI Security Chat
+                </button>
             </nav>
 
-            {activeTab === "summary" ? (
+            {activeTab === "chat" ? (
+                <section>
+                    <InfoPanel
+                        title="AI Security Chat"
+                        text="Ask anything about cybersecurity — threat analysis, incident response, vulnerabilities, or best practices."
+                        theme={theme}
+                    />
+                    <div style={styles.chatWindow}>
+                        {chatMessages.length === 0 && (
+                            <p style={styles.chatEmpty}>
+                                Start by asking a security question — e.g. "How do I investigate a ransomware attack?"
+                            </p>
+                        )}
+                        {chatMessages.map((msg: ChatMessage, i: number) => (
+                            <div
+                                key={i}
+                                style={msg.role === "user" ? styles.chatBubbleUser : styles.chatBubbleModel}
+                            >
+                                {msg.content}
+                            </div>
+                        ))}
+                        {chatLoading && (
+                            <div style={styles.chatBubbleModel}>Thinking…</div>
+                        )}
+                        <div ref={chatEndRef} />
+                    </div>
+                    <div style={styles.chatInputRow}>
+                        <input
+                            type="text"
+                            value={chatInput}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setChatInput(e.target.value)}
+                            onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => e.key === "Enter" && sendChatMessage()}
+                            placeholder="Ask a security question…"
+                            style={styles.chatInput}
+                        />
+                        <button
+                            type="button"
+                            style={styles.chatSendButton}
+                            onClick={sendChatMessage}
+                            disabled={chatLoading}
+                        >
+                            {chatLoading ? "…" : "Send"}
+                        </button>
+                    </div>
+                </section>
+            ) : activeTab === "summary" ? (
                 <section>
                     <InfoPanel
                         title="Security Log / Email Summarizer"
@@ -517,6 +618,72 @@ function makeStyles(theme: typeof palette.light): Record<string, React.CSSProper
             padding: 14,
             fontSize: 14,
             overflowX: "auto",
+        },
+        chatWindow: {
+            border: `1px solid ${theme.line}`,
+            borderRadius: 12,
+            background: theme.panel,
+            padding: 16,
+            minHeight: 320,
+            maxHeight: 480,
+            overflowY: "auto" as const,
+            display: "flex",
+            flexDirection: "column" as const,
+            gap: 12,
+            marginBottom: 12,
+        },
+        chatEmpty: {
+            color: theme.muted,
+            fontSize: 15,
+            textAlign: "center" as const,
+            margin: "auto",
+            lineHeight: 1.6,
+        },
+        chatBubbleUser: {
+            alignSelf: "flex-end" as const,
+            background: theme.accent,
+            color: "#ffffff",
+            borderRadius: "16px 16px 4px 16px",
+            padding: "10px 14px",
+            maxWidth: "75%",
+            fontSize: 15,
+            lineHeight: 1.5,
+        },
+        chatBubbleModel: {
+            alignSelf: "flex-start" as const,
+            background: theme.panelSoft,
+            color: theme.text,
+            border: `1px solid ${theme.line}`,
+            borderRadius: "16px 16px 16px 4px",
+            padding: "10px 14px",
+            maxWidth: "75%",
+            fontSize: 15,
+            lineHeight: 1.5,
+            whiteSpace: "pre-wrap" as const,
+        },
+        chatInputRow: {
+            display: "flex",
+            gap: 10,
+        },
+        chatInput: {
+            flex: 1,
+            border: `1px solid ${theme.line}`,
+            borderRadius: 10,
+            background: theme.input,
+            color: theme.text,
+            padding: "12px 14px",
+            fontSize: 15,
+            outline: "none",
+        },
+        chatSendButton: {
+            border: 0,
+            borderRadius: 10,
+            background: `linear-gradient(135deg, ${theme.accentStrong}, ${theme.accent})`,
+            color: "#ffffff",
+            padding: "12px 22px",
+            fontWeight: 800,
+            fontSize: 15,
+            cursor: "pointer",
         },
     }
 }
